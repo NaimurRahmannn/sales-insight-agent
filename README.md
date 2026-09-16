@@ -130,6 +130,20 @@ sales-insight-agent/
 
 ## 8. Installation and Setup
 
+### Option 1: Running with Docker (Recommended)
+
+1. Make sure you have Docker and Docker Compose installed.
+2. Set up your `.env` file (see below for the template).
+3. Run `docker compose up -d --build` to start both the database and the app.
+4. Initialize the database by running the setup scripts inside the app container:
+   ```bash
+   docker compose exec app python database/create_database.py
+   docker compose exec app python database/load_data.py
+   ```
+5. Open your browser and navigate to `http://localhost:8501`.
+
+### Option 2: Manual Local Setup
+
 ### Clone repository
 ```bash
 git clone https://github.com/NaimurRahmannn/sales-insight-agent.git

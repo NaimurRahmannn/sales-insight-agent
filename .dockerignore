@@ -1,0 +1,15 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.git/
+.gitignore
+*.db
+chat_history.json
+docker-compose.yml
+Dockerfile
