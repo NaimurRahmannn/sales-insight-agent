@@ -2,15 +2,6 @@
 
 An AI-powered sales analytics assistant that combines business intelligence, machine learning forecasting, and LLM-based natural language querying.
 
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
-![LangGraph](https://img.shields.io/badge/LangGraph-1C3C3C?style=for-the-badge)
-![Gemini](https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
-![Power BI](https://img.shields.io/badge/PowerBI-F2C811?style=for-the-badge&logo=Power%20BI&logoColor=black)
-
----
-
 ## 2. Project Overview
 
 **Business Problem:**
@@ -203,10 +194,3 @@ streamlit run app.py
 - Adding user authentication and role-based access control (RBAC).
 
 ---
-
-## 12. Author
-
-**Naimur Rahman**  
-*AI Engineer Intern*  
-Passionate about bridging the gap between data engineering, machine learning, and business intelligence through LLM-powered systems. 
-[GitHub Profile](https://github.com/NaimurRahmannn)
