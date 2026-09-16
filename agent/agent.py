@@ -1,6 +1,6 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.prebuilt import create_react_agent
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage
 
 from . import config
 from .prompts import SYSTEM_PROMPT
@@ -36,13 +36,23 @@ app = create_react_agent(
     prompt=SYSTEM_PROMPT
 )
 
-def ask(question: str) -> str:
+def ask(question: str, history: list = None) -> str:
     """
-    Passes a natural language question to the AI Agent.
+    Passes a natural language question and optional conversation history to the AI Agent.
     The agent autonomously decides which PostgreSQL or CSV tools to use,
     executes them, and returns a natural language business answer.
     """
-    inputs = {"messages": [HumanMessage(content=question)]}
+    langchain_messages = []
+    if history:
+        for msg in history:
+            if msg["role"] == "user":
+                langchain_messages.append(HumanMessage(content=msg["content"]))
+            elif msg["role"] == "assistant":
+                langchain_messages.append(AIMessage(content=msg["content"]))
+                
+    langchain_messages.append(HumanMessage(content=question))
+    
+    inputs = {"messages": langchain_messages}
     
     try:
         # Stream or invoke the agent
