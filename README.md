@@ -111,12 +111,17 @@ The PostgreSQL database follows a dimensional **Star Schema** approach optimized
 ```text
 sales-insight-agent/
 ├── agent/               # LangGraph agent, tools, and prompts
+├── assets/              # Dashboard screenshots and UI assets
 ├── database/            # Schema definitions and ETL load scripts
 ├── dashboard/           # Power BI dashboard files
 ├── data/                # Raw and processed CSV datasets
+├── docs/                # Project documentation and data dictionary
+├── ml/                  # Trained machine learning models
 ├── notebooks/           # Jupyter notebooks (Data Cleaning, EDA, Forecasting)
 ├── pipeline/            # Data engineering pipeline scripts
+├── .env.example         # Example environment variables
 ├── app.py               # Streamlit frontend application
+├── docker-compose.yml   # Docker Compose configuration
 ├── requirements.txt     # Python dependencies
 └── README.md            # Project documentation
 ```
@@ -154,9 +159,8 @@ GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### Database setup
-1. Create a PostgreSQL database named `sales_intelligence`.
-2. Run `database/schema.sql` to construct the star schema.
-3. Run `python database/load_data.py` to populate the database with processed data.
+1. Run `python database/create_database.py` to create the PostgreSQL database and construct the star schema.
+2. Run `python database/load_data.py` to populate the database with processed data.
 
 ---
 
