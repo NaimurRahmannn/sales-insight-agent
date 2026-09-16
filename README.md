@@ -178,7 +178,8 @@ streamlit run app.py
 ## 10. Screenshots
 
 ### Power BI Dashboard
-![Dashboard](assets/dashboard.png)
+![Dashboard 1](assets/dashboard.png)
+![Dashboard 2](assets/dashboard_2.png)
 
 ### AI Assistant
 ![Chat](assets/chat.png)
