@@ -1,25 +1,28 @@
 import streamlit as st
 import sys
 import os
-import json
+import uuid
+from sqlalchemy import text
 
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from agent.agent import ask
+from agent.database import engine
 
-HISTORY_FILE = "chat_history.json"
+def load_chat_history(session_id):
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT role, content FROM chat_sessions WHERE session_id = :sid ORDER BY created_at ASC"), {"sid": session_id})
+        return [{"role": row[0], "content": row[1]} for row in result]
 
-def load_chat_history():
-    if os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, "r") as f:
-                return json.load(f)
-        except Exception:
-            return []
-    return []
+def save_chat_message(session_id, role, content):
+    with engine.connect() as conn:
+        conn.execute(text("INSERT INTO chat_sessions (session_id, role, content) VALUES (:sid, :role, :content)"), 
+                     {"sid": session_id, "role": role, "content": content})
+        conn.commit()
 
-def save_chat_history(messages):
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(messages, f)
+def clear_chat_history(session_id):
+    with engine.connect() as conn:
+        conn.execute(text("DELETE FROM chat_sessions WHERE session_id = :sid"), {"sid": session_id})
+        conn.commit()
 
 st.set_page_config(
     page_title="Sales Intelligence Agent", 
@@ -186,9 +189,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+@st.cache_resource
+def get_session_id():
+    return str(uuid.uuid4())
+
+if "session_id" not in st.session_state:
+    st.session_state.session_id = get_session_id()
+
 # Initialize session state for chat history
 if "messages" not in st.session_state:
-    st.session_state.messages = load_chat_history()
+    st.session_state.messages = load_chat_history(st.session_state.session_id)
 
 # --- Premium Sidebar ---
 with st.sidebar:
@@ -245,8 +255,8 @@ with st.sidebar:
             
     st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🗑️ Clear Chat History", use_container_width=True):
+        clear_chat_history(st.session_state.session_id)
         st.session_state.messages = []
-        save_chat_history([])
         st.rerun()
     
 # --- Welcome State ---
@@ -293,7 +303,7 @@ if prompt:
         st.markdown(prompt)
     
     st.session_state.messages.append({"role": "user", "content": prompt})
-    save_chat_history(st.session_state.messages)
+    save_chat_message(st.session_state.session_id, "user", prompt)
 
     with st.chat_message("assistant"):
         with st.spinner("Analyzing data..."):
@@ -301,9 +311,9 @@ if prompt:
                 response = ask(prompt, history=st.session_state.messages[:-1])
                 st.markdown(response)
                 st.session_state.messages.append({"role": "assistant", "content": response})
-                save_chat_history(st.session_state.messages)
+                save_chat_message(st.session_state.session_id, "assistant", response)
             except Exception as e:
                 error_msg = f"Sorry, I encountered an error while analyzing the data. Please try again. ({str(e)})"
                 st.error(error_msg)
                 st.session_state.messages.append({"role": "assistant", "content": error_msg})
-                save_chat_history(st.session_state.messages)
+                save_chat_message(st.session_state.session_id, "assistant", error_msg)

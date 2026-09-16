@@ -75,3 +75,16 @@ CREATE INDEX idx_fact_sales_product ON fact_sales(product_id);
 -- The user requested a region index on fact_sales, but region is stored in dim_customer.
 -- We index the region column in dim_customer to speed up filtering on region before joining.
 CREATE INDEX idx_dim_customer_region ON dim_customer(region);
+
+-- ==========================================
+-- CHAT HISTORY
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_chat_sessions_id ON chat_sessions(session_id);

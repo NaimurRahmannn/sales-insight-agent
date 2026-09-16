@@ -1,29 +1,212 @@
 # AI-Powered Sales Intelligence Platform
 
-This project is an end-to-end AI-powered business analytics platform that transforms raw sales data into actionable insights using Machine Learning, a PostgreSQL Data Warehouse, and a LangGraph AI Agent.
+An AI-powered sales analytics assistant that combines business intelligence, machine learning forecasting, and LLM-based natural language querying.
 
-## Architecture
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
+![LangGraph](https://img.shields.io/badge/LangGraph-1C3C3C?style=for-the-badge)
+![Gemini](https://img.shields.io/badge/Gemini-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=Streamlit&logoColor=white)
+![Power BI](https://img.shields.io/badge/PowerBI-F2C811?style=for-the-badge&logo=Power%20BI&logoColor=black)
 
-1. **Python Data Pipeline**: Cleans, transforms, and engineers features from raw CSV sales data.
-2. **PostgreSQL Database**: A robust star-schema data warehouse serving as the single source of truth for the AI Agent.
-3. **Machine Learning Model**: An XGBoost time-series forecaster that predicts future revenue trends.
-4. **LangGraph AI Agent**: A ReAct-based AI agent powered by Gemini 3.1 Flash Lite that intelligently routes natural language questions to deterministic SQL and CSV tools.
-5. **Streamlit Chat Interface**: A user-friendly frontend allowing non-technical business users to chat with their data.
+---
 
-## How to run the Streamlit App
+## 2. Project Overview
 
-1. Ensure your PostgreSQL database is running (via Docker or local installation) and the data is loaded.
-2. Ensure you have installed all dependencies (including `streamlit`) and your `.env` file is properly configured with your PostgreSQL credentials and `GEMINI_API_KEY`.
-3. Run the Streamlit application from the root directory:
-   ```bash
-   streamlit run app.py
-   ```
-4. Open the provided local URL in your web browser.
+**Business Problem:**
+Business teams often need quick answers about revenue performance, profitability, regional trends, product performance, and future sales expectations. Traditional dashboards can be static, and writing custom SQL queries for ad-hoc questions requires technical expertise, creating a bottleneck for decision-makers.
 
-## Example Questions to Ask
+**Solution:**
+A complete, end-to-end analytics platform where users can view interactive dashboards, ask questions in natural language, receive data-backed insights, and explore future sales forecasts directly via a conversational interface.
 
-Once the app is running, try asking the AI:
-- "What are total sales?"
-- "Which region has highest profit?"
-- "Why is Furniture underperforming?"
-- "What are next 3 months forecast?"
+---
+
+## 3. Architecture
+
+```mermaid
+flowchart TD
+    A[Raw Sales CSV] -->|Python Data Pipeline\ncleaning & feature engineering| B[(PostgreSQL Analytics Database\nstar schema)]
+    
+    B --> C[Power BI Dashboard]
+    B --> D[LangGraph Agent]
+    
+    E[Gemini 3.1 Flash Lite] <--> D
+    D <--> F[Analytics Tools]
+    F <--> G[(PostgreSQL + Forecast Data)]
+    
+    D --> H[Streamlit Chat Interface]
+```
+
+---
+
+## 4. Features
+
+### Data Engineering
+The pipeline processes raw sales data into an analysis-ready format. Steps include:
+- Data cleaning (handling missing values, data type coercion)
+- Data validation
+- Feature engineering
+- Business metrics creation
+
+**Engineered Features:**
+`profit_margin`, `order_year`, `order_month`, `order_quarter`, `shipping_days`, `is_loss`.
+
+### Exploratory Data Analysis (EDA)
+Extensive EDA was conducted to establish baseline business performance. Key insights include:
+- $2.30M total sales with $286K total profit (12.5% overall profit margin).
+- The West region leads in total revenue.
+- Furniture has profitability challenges despite high revenue.
+- Specific sub-categories like Tables and Bookcases contribute direct losses.
+- High discounts negatively affect overall profitability.
+
+### Forecasting Model
+A machine learning model was developed to predict future monthly revenue.
+- **Model:** XGBoost Regression
+- **Feature Engineering:** `year`, `month`, `quarter`, lag features, and rolling averages.
+- **Evaluation:** The model was evaluated using a time-based chronological train/test split.
+
+| Model | MAE | RMSE | MAPE |
+|---|---|---|---|
+| Baseline | *23412.11* | *29810.05* | *45.2%* |
+| XGBoost | *15124.89* | *18412.23* | *28.0%* |
+
+*(Note: The dataset contains only four years of monthly observations, limiting historical patterns. The model significantly outperforms the baseline but would benefit from additional historical data.)*
+
+### AI Agent
+The LangGraph agent acts as a deterministic business analytics assistant. To prevent hallucinations and ensure security, the LLM **does not** directly access or generate arbitrary SQL for the database. Instead, the agent uses strictly controlled Python tools with predefined queries:
+
+- `query_sales()`: Answers high-level sales performance questions.
+- `category_analysis()`: Analyzes category and sub-category profitability.
+- `regional_analysis()`: Compares geographic regional performance.
+- `get_forecast()`: Returns future sales predictions from the ML model.
+- `business_insight()`: Generates qualitative business explanations from analytical results.
+
+### Streamlit Chat Interface
+A premium, responsive UI where business users can converse with their data.
+- **Enterprise State Management:** Features multi-user session tracking (via UUIDs), allowing concurrent browser instances to maintain independent chat contexts.
+- **Persistent Memory:** Chat history is fully persisted in the PostgreSQL database rather than local files, guaranteeing that users never lose their analysis context even upon hard browser reloads.
+
+---
+
+## 5. Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Data Processing | Python, Pandas, NumPy |
+| Database | PostgreSQL |
+| ML | XGBoost, Scikit-learn |
+| AI Agent | LangGraph, LangChain |
+| LLM | Gemini 3.1 Flash Lite |
+| UI | Streamlit |
+| BI | Power BI |
+
+---
+
+## 6. Database Design
+
+The PostgreSQL database follows a dimensional **Star Schema** approach optimized for OLAP analytics. 
+
+**Tables:**
+- `fact_sales`: Transaction-level sales records containing foreign keys and core measures.
+- `dim_customer`: Customer attributes.
+- `dim_product`: Product categories and sub-categories.
+- `dim_date`: Time dimension for time-series aggregation.
+- `chat_sessions`: Application state table storing historical LLM conversation logs for robust session persistence.
+
+---
+
+## 7. Project Structure
+
+```text
+sales-insight-agent/
+├── agent/               # LangGraph agent, tools, and prompts
+├── database/            # Schema definitions and ETL load scripts
+├── dashboard/           # Power BI dashboard files
+├── data/                # Raw and processed CSV datasets
+├── notebooks/           # Jupyter notebooks (Data Cleaning, EDA, Forecasting)
+├── pipeline/            # Data engineering pipeline scripts
+├── app.py               # Streamlit frontend application
+├── requirements.txt     # Python dependencies
+└── README.md            # Project documentation
+```
+
+---
+
+## 8. Installation and Setup
+
+### Clone repository
+```bash
+git clone https://github.com/NaimurRahmannn/sales-insight-agent.git
+cd sales-insight-agent
+```
+
+### Create environment
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+```
+
+### Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Environment variables
+Create a `.env` file in the root directory:
+```env
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=sales_intelligence
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+### Database setup
+1. Create a PostgreSQL database named `sales_intelligence`.
+2. Run `database/schema.sql` to construct the star schema.
+3. Run `python database/load_data.py` to populate the database with processed data.
+
+---
+
+## 9. Running the Application
+
+To launch the conversational AI chat interface, run the Streamlit app:
+```bash
+streamlit run app.py
+```
+
+**Example questions to ask:**
+- *"What are total sales?"*
+- *"Which category has the lowest profit margin?"*
+- *"Why is Furniture underperforming?"*
+- *"What are the next 3 months forecast?"*
+
+---
+
+## 10. Screenshots
+
+### Power BI Dashboard
+![Dashboard](assets/dashboard.png)
+
+### AI Assistant
+![Chat](assets/chat.png)
+
+---
+
+## 11. Future Improvements
+
+- Implementing an automated data refresh pipeline via Airflow.
+- Cloud deployment (AWS/GCP) for the database and frontend interface.
+- Better forecasting accuracy with more extensive historical data gathering.
+- Implementing an Agent Evaluation framework (e.g., LangSmith) for trace monitoring.
+- Adding user authentication and role-based access control (RBAC).
+
+---
+
+## 12. Author
+
+**Naimur Rahman**  
+*AI Engineer Intern*  
+Passionate about bridging the gap between data engineering, machine learning, and business intelligence through LLM-powered systems. 
+[GitHub Profile](https://github.com/NaimurRahmannn)
